@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<UDP_Relay_Service>
+  <LocalClientPort>55530</LocalClientPort>
+  <LocalClientIP>0.0.0.0</LocalClientIP>
+  <LocalServerPort>55540</LocalServerPort>
+  <LocalServerIP>0.0.0.0</LocalServerIP>
+  <ClientPort>55520</ClientPort>
+  <ClientIP>192.168.1.255</ClientIP>
+  <ServerPort>55550</ServerPort>
+  <ServerIP>192.168.1.255</ServerIP>
+  <TimeOut>0</TimeOut>
+</UDP_Relay_Service>

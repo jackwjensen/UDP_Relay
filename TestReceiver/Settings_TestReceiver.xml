@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<TestReceiver>
+  <LocalPort>55550</LocalPort>
+  <LocalIP>0.0.0.0</LocalIP>
+  <ClientPort>55540</ClientPort>
+  <ClientIP>192.168.1.255</ClientIP>
+  <TimeOut>0</TimeOut>
+</TestReceiver>
