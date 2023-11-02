@@ -67,17 +67,17 @@ namespace UDP_Relay_Service
                 Logger.Log("UDP Relay Service starting");
                 XML_Wrapper xML_Wrapper = new XML_Wrapper(@"Settings_UDP_Relay_Service.xml");
 
-                IPEndPoint localClientEndPoint = xML_Wrapper.GetIPEndPoint(@"/UDP_Relay_Service/LocalClientIP", @"/UDP_Relay_Service/LocalClientPort");
-                Logger.LogDebug("Local ClientEndPoint: " + localClientEndPoint.ToString());
+                IPEndPoint listeningClientEndPoint = xML_Wrapper.GetIPEndPoint(@"/UDP_Relay_Service/ListeningClientIP", @"/UDP_Relay_Service/ListeningClientPort");
+                Logger.LogDebug("Listening Client EndPoint: " + listeningClientEndPoint.ToString());
 
-                IPEndPoint localServerEndPoint = xML_Wrapper.GetIPEndPoint(@"/UDP_Relay_Service/LocalServerIP", @"/UDP_Relay_Service/LocalServerPort");
-                Logger.LogDebug("Local ServerEndPoint: " + localServerEndPoint);
+                IPEndPoint listeningServerEndPoint = xML_Wrapper.GetIPEndPoint(@"/UDP_Relay_Service/ListeningServerIP", @"/UDP_Relay_Service/ListeningServerPort");
+                Logger.LogDebug("Listening Server EndPoint: " + listeningServerEndPoint);
 
-                IPEndPoint clientEndPoint = xML_Wrapper.GetIPEndPoint(@"/UDP_Relay_Service/ClientIP", @"/UDP_Relay_Service/ClientPort");
-                Logger.LogDebug("Client EndPoint: " + clientEndPoint);
+                IPEndPoint sendingDlientEndPoint = xML_Wrapper.GetIPEndPoint(@"/UDP_Relay_Service/SendingClientIP", @"/UDP_Relay_Service/SendingClientPort");
+                Logger.LogDebug("Sending Client EndPoint: " + sendingDlientEndPoint);
 
-                IPEndPoint serverEndPoint = xML_Wrapper.GetIPEndPoint(@"/UDP_Relay_Service/ServerIP", @"/UDP_Relay_Service/ServerPort");
-                Logger.LogDebug("Server EndPoint: " + serverEndPoint);
+                IPEndPoint sendingServerEndPoint = xML_Wrapper.GetIPEndPoint(@"/UDP_Relay_Service/SendingServerIP", @"/UDP_Relay_Service/SendingServerPort");
+                Logger.LogDebug("Sending Server EndPoint: " + sendingServerEndPoint);
 
                 int timeOut = xML_Wrapper.GetInt(@"/UDP_Relay_Service/TimeOut");
                 Logger.LogDebug("Timeout: " + timeOut);
@@ -85,8 +85,8 @@ namespace UDP_Relay_Service
                 // Start relaying UDP packets
                 Logger.LogDebug("Relaying of UDP packets started");
                 relay = new UDP_Relay();
-                relay.StartRelaying(localClientEndPoint, serverEndPoint);
-                relay.StartRelaying(localServerEndPoint, clientEndPoint);
+                relay.StartRelaying(listeningClientEndPoint, sendingServerEndPoint);
+                relay.StartRelaying(listeningServerEndPoint, sendingDlientEndPoint);
 
                 Logger.Log("UDP Relay Service started");
             }

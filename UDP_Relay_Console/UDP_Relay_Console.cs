@@ -27,17 +27,17 @@ try
     Logger.Log("UDP Relay Console started");
     XML_Wrapper xML_Wrapper = new XML_Wrapper(@"Settings_UDP_Relay_Console.xml");
 
-    IPEndPoint localClientEndPoint = xML_Wrapper.GetIPEndPoint(@"/UDP_Relay_Console/LocalClientIP", @"/UDP_Relay_Console/LocalClientPort");
-    Logger.LogDebug("Local ClientEndPoint: " + localClientEndPoint.ToString());
+    IPEndPoint listeningClientEndPoint = xML_Wrapper.GetIPEndPoint(@"/UDP_Relay_Console/ListeningClientIP", @"/UDP_Relay_Console/ListeningClientPort");
+    Logger.LogDebug("Listening Client EndPoint: " + listeningClientEndPoint);
 
-    IPEndPoint localServerEndPoint = xML_Wrapper.GetIPEndPoint(@"/UDP_Relay_Console/LocalServerIP", @"/UDP_Relay_Console/LocalServerPort");
-    Logger.LogDebug("Local ServerEndPoint: " + localServerEndPoint);
+    IPEndPoint sendingClientEndPoint = xML_Wrapper.GetIPEndPoint(@"/UDP_Relay_Console/SendingClientIP", @"/UDP_Relay_Console/SendingClientPort");
+    Logger.LogDebug("Sending Client EndPoint: " + sendingClientEndPoint);
 
-    IPEndPoint clientEndPoint = xML_Wrapper.GetIPEndPoint(@"/UDP_Relay_Console/ClientIP", @"/UDP_Relay_Console/ClientPort");
-    Logger.LogDebug("Client EndPoint: " + clientEndPoint);
+    IPEndPoint listeningServerEndPoint = xML_Wrapper.GetIPEndPoint(@"/UDP_Relay_Console/ListeningServerIP", @"/UDP_Relay_Console/ListeningServerPort");
+    Logger.LogDebug("Listening Server EndPoint: " + listeningServerEndPoint);
 
-    IPEndPoint serverEndPoint = xML_Wrapper.GetIPEndPoint(@"/UDP_Relay_Console/ServerIP", @"/UDP_Relay_Console/ServerPort");
-    Logger.LogDebug("Server EndPoint: " + serverEndPoint);
+    IPEndPoint sendingServerEndPoint = xML_Wrapper.GetIPEndPoint(@"/UDP_Relay_Console/SendingServerIP", @"/UDP_Relay_Console/SendingServerPort");
+    Logger.LogDebug("Sending Server EndPoint: " + sendingServerEndPoint);
 
     int timeOut = xML_Wrapper.GetInt(@"/UDP_Relay_Console/TimeOut");
     Logger.LogDebug("Timeout: " + timeOut);
@@ -45,8 +45,8 @@ try
     // Start relaying UDP packets
     Logger.Log("Relaying of UDP packets started");
     UDP_Relay relay = new UDP_Relay();
-    relay.StartRelaying(localClientEndPoint, serverEndPoint);
-    relay.StartRelaying(localServerEndPoint, clientEndPoint);
+    relay.StartRelaying(listeningClientEndPoint, sendingServerEndPoint);
+    relay.StartRelaying(listeningServerEndPoint, sendingClientEndPoint);
     Thread.Sleep(100);
     Console.WriteLine("Pres any key to stop relaying");
 

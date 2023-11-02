@@ -145,7 +145,6 @@ namespace UDP_Relay_Core
             try
             {
                 string tName = localEndPoint + " - " + relayEndPoint;
-                Logger.LogDebug("Relay task started: " + tName);
 
                 using (UdpClient udpClient = new UdpClient(localEndPoint))
                 {

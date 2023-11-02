@@ -27,11 +27,11 @@ try
     Logger.Log("Test Sender started");
     XML_Wrapper xML_Wrapper = new XML_Wrapper(@"Settings_TestSender.xml");
 
-    IPEndPoint localEndPoint = xML_Wrapper.GetIPEndPoint(@"/TestSender/LocalIP", @"/TestSender/LocalPort");
-    Logger.LogDebug("Local IPEndPoint: " + localEndPoint.ToString());
+    IPEndPoint listeningEndPoint = xML_Wrapper.GetIPEndPoint(@"/TestSender/ListeningIP", @"/TestSender/ListeningPort");
+    Logger.LogDebug("Listening EndPoint: " + listeningEndPoint.ToString());
 
-    IPEndPoint serverEndPoint = xML_Wrapper.GetIPEndPoint(@"/TestSender/ServerIP", @"/TestSender/ServerPort");
-    Logger.LogDebug("Server IPEndPoint: " + serverEndPoint);
+    IPEndPoint sendingEndPoint = xML_Wrapper.GetIPEndPoint(@"/TestSender/SendingIP", @"/TestSender/SendingPort");
+    Logger.LogDebug("Sending EndPoint: " + sendingEndPoint);
 
     int timeOut = xML_Wrapper.GetInt(@"/TestSender/TimeOut");
     Logger.LogDebug("Timeout: " + timeOut);
@@ -45,22 +45,12 @@ try
     {
         string sendMessage = "A" + i;
         byte[] sendData = Encoding.UTF8.GetBytes(sendMessage);
-        relay.Send(serverEndPoint, sendData);
-        Logger.Log("Data sent: " + sendMessage);
+        relay.Send(sendingEndPoint, sendData);
+        Logger.Log("Data sent: " + sendMessage + " to: " + sendingEndPoint);
 
-        //sendMessage = "B" + i;
-        //sendData = Encoding.UTF8.GetBytes(sendMessage);
-        //relay.Send(serverEndPoint, sendData);
-        //Logger.Log("Data sent: " + sendMessage);
-
-        //sendMessage = "C" + i;
-        //sendData = Encoding.UTF8.GetBytes(sendMessage);
-        //relay.Send(serverEndPoint, sendData);
-        //Logger.Log("Data sent: " + sendMessage);
-
-        byte[] receivedData = relay.Receive(localEndPoint, timeOut, null);
+        byte[] receivedData = relay.Receive(listeningEndPoint, timeOut, null);
         string receivedMessage = Encoding.UTF8.GetString(receivedData);
-        Logger.Log("Received: " + receivedMessage);
+        Logger.Log("Received: " + receivedMessage + " from: " + listeningEndPoint);
 
         Thread.Sleep(100); // Throttle the sending to see effect on number of packets received/lost
     };
