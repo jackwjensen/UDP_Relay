@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System;
 using System.Threading.Tasks;
 using System.Threading;
-using System.ComponentModel;
 
 namespace UDP_Relay_Core
 {
@@ -20,7 +17,7 @@ namespace UDP_Relay_Core
         public static async Task<T> WithCancellation<T>(this Task<T> task, CancellationToken cancellationToken)
         {
             TaskCompletionSource<bool> taskCompletionSource = new TaskCompletionSource<bool>();
-            using (cancellationToken.Register(obj => ((TaskCompletionSource<bool>)obj).TrySetResult(true), taskCompletionSource))
+            using (cancellationToken.Register(() => taskCompletionSource.TrySetResult(true)))
             {
                 if (task != await Task.WhenAny(task, taskCompletionSource.Task))
                 { // If task is not the first to complete, it is canceled if cancellation is requested.

@@ -68,15 +68,15 @@ Automated tests live in `UDP_Relay_Core.Tests` (xUnit, run with `dotnet test`); 
 
 ## Logging
 
-`UDP_Relay_Core.Logger` is a static class: every `Log*` call writes to `Console` and fans out to each `ILogger` registered with `Logger.AddLogger(...)`. Hosts wire up sinks at startup via `Microsoft.Extensions.Logging` (Console + Debug everywhere; rolling `.log` files in a `Logs/` subfolder via `NetEscapades.Extensions.Logging.RollingFile` (configured with `options.Extension = "log"`); Windows Event Log in the Service). Use message templates and the existing `Log` / `LogDebug` / `LogTrace` / `Log(ex)` overloads.
+`UDP_Relay_Core.Logger` is a static class: every `Log*` call fans out to each `ILogger` registered with `Logger.AddLogger(...)`, and also mirrors to `Console` when `Logger.WriteToConsole` is true (the console host and test harnesses set it; the Service leaves it off). Hosts wire up sinks at startup via `Microsoft.Extensions.Logging` (Debug everywhere, Console in the interactive hosts; rolling `.log` files in a `Logs/` subfolder via `NetEscapades.Extensions.Logging.RollingFile` (configured with `options.Extension = "log"`); Windows Event Log in the Service). Use message templates and the existing `Log` / `LogDebug` / `LogTrace` / `Log(ex)` overloads.
 
 ## Conventions & gotchas
 
 - **Naming:** types and projects use underscores (`UDP_Relay`, `XML_Wrapper`, `UDP_Relay_Core`). This is non-idiomatic C# but it is the established style here — **match it; don't rename to PascalCase.** Private fields are `_camelCase`.
-- **Nullable:** enabled in `UDP_Relay_Console` and `UDP_Relay_Core.Tests`. Core, Service, and the harnesses do not have `<Nullable>enable</Nullable>` — don't assume nullable-aware contracts there.
+- **Nullable:** enabled repo-wide for every SDK project via `Directory.Build.props` (Core, Console, harnesses, tests). The classic .NET Framework Service is excluded by a project-name condition. Don't introduce new nullable warnings.
 - **Async:** methods that await carry the `Async` suffix (`RelayAsync`). `WithCancellation` is an extension method (suffix not expected).
 - **Target frameworks are mixed on purpose** (Core `netstandard2.0`; Console/harnesses/tests multi-target `net8.0;net9.0;net10.0`; Service `net4.7.2`). .NET 10 is the primary LTS target; 8 and 9 are kept for compatibility. The framework list lives once in `Directory.Build.props` as `$(UdpRelayAppTargetFrameworks)`; the four multi-targeted projects reference it, so change it in one place. `Directory.Build.props` also holds shared assembly/package metadata (Company = Allegro IT, repo URL, etc.) and is imported by every project including the classic Service (SDK-only props there are simply ignored).
-- **`Logger` writes to `Console` directly** (in addition to any registered `ILogger`s), even when Core is used as a library. Harmless for the hosts; keep in mind if embedding Core elsewhere.
+- **`Logger` console output is opt-in.** `Logger.WriteToConsole` defaults to false so Core stays quiet when embedded as a library; the console host and test harnesses set it `true`. Registered `ILogger`s always receive output regardless.
 - **The relay tolerates destination-unreachable resets — keep it that way.** `RelayAsync` catches `SocketError.ConnectionReset` (Windows `WSAECONNRESET`) / `ConnectionRefused` (Linux) and keeps relaying. Without it, a momentarily-down endpoint permanently kills that relay direction until the process restarts (regression-tested by `Relay_survives_send_to_unreachable_destination` in `UDP_Relay_Core.Tests`).
 
 ## Working agreements

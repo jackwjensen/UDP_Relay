@@ -4,7 +4,6 @@
     <OutputType>Exe</OutputType>
     <TargetFrameworks>$(UdpRelayAppTargetFrameworks)</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
     <BaseOutputPath></BaseOutputPath>
   </PropertyGroup>
 

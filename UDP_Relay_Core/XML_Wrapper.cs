@@ -28,7 +28,7 @@ namespace UDP_Relay_Core
         /// </summary>
         /// <param name="xPath">XML path for the node to get.</param>
         /// <returns>The first XmlNode that matches the XPath query or null if no matching node is found.</returns>
-        public XmlNode GetNode(string xPath)
+        public XmlNode? GetNode(string xPath)
         {
             return xmlDocument.SelectSingleNode(xPath);
         }
@@ -40,7 +40,7 @@ namespace UDP_Relay_Core
         /// <returns></returns>
         public string GetNodeValue(string xPath)
         {
-            return GetNode(xPath).InnerText;
+            return (GetNode(xPath) ?? throw new InvalidOperationException($"XML node not found: {xPath}")).InnerText;
         }
 
         /// <summary>
@@ -50,7 +50,7 @@ namespace UDP_Relay_Core
         /// <param name="value"></param>
         public void SetNodeValue(string xPath, object value)
         {
-            GetNode(xPath).InnerText = Convert.ToString(value);
+            (GetNode(xPath) ?? throw new InvalidOperationException($"XML node not found: {xPath}")).InnerText = Convert.ToString(value) ?? string.Empty;
         }
 
         /// <summary>

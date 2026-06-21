@@ -17,8 +17,8 @@ namespace UDP_Relay_Core
         private bool _isStopping = false;
         public bool IsStopping { get => _isStopping; }
 
-        private List<Task> _relayTasks;
-        private CancellationTokenSource _cancellationTokenSource;
+        private List<Task>? _relayTasks;
+        private CancellationTokenSource? _cancellationTokenSource;
         private bool disposedValue;
 
         /// <summary>
@@ -72,7 +72,7 @@ namespace UDP_Relay_Core
         /// <param name="timeOut">0 = no timeout, positive value for timeout in milliseconds.</param>
         /// <param name="receiveEndPoint">Optional remote end point to receive data from - will limit to only receive from that end point.</param>
         /// <returns>Data received or empty byte[] if timeout.</returns>
-        public byte[] Receive(IPEndPoint localEndPoint, int timeOut = 0, IPEndPoint receiveEndPoint = null)
+        public byte[] Receive(IPEndPoint localEndPoint, int timeOut = 0, IPEndPoint? receiveEndPoint = null)
         {
             Byte[] data = new byte[0];
             try
@@ -129,7 +129,8 @@ namespace UDP_Relay_Core
             {
                 _cancellationTokenSource = new CancellationTokenSource();
             }
-            Task t = Task.Run(() => RelayAsync(localEndPoint, relayEndPoint, _cancellationTokenSource.Token), _cancellationTokenSource.Token);
+            CancellationToken token = _cancellationTokenSource.Token;
+            Task t = Task.Run(() => RelayAsync(localEndPoint, relayEndPoint, token), token);
             _relayTasks.Add(t);
         }
 
@@ -214,7 +215,7 @@ namespace UDP_Relay_Core
         /// </summary>
         private static bool IsDestinationUnreachable(Exception ex)
         {
-            SocketException socketException = ex as SocketException;
+            SocketException? socketException = ex as SocketException;
             if (socketException == null && ex is AggregateException aggregate)
             {
                 socketException = aggregate.Flatten().InnerException as SocketException;

@@ -184,10 +184,10 @@ Every push and pull request is built and tested on Windows via [GitHub Actions](
 
 ## Logging
 
-Logging is **injectable**. The static `Logger` writes to the console and fans out to every `ILogger` you register via `Logger.AddLogger(...)`. Out of the box:
+Logging is **injectable**. The static `Logger` fans out to every `ILogger` you register via `Logger.AddLogger(...)`, and can also mirror to the console (`Logger.WriteToConsole` — off by default so the library stays quiet when embedded; the console host and test harnesses enable it). Out of the box:
 
-- **Console** + **Debug** output in all hosts.
-- **Rolling file** logs — `.log` files in a `Logs/` folder (e.g. `UDP_Relay_Consol<date>.0.log`) via `NetEscapades.Extensions.Logging.RollingFile`.
+- **Console** (in the console host + test harnesses) and **Debug** output.
+- **Rolling file** logs — `.log` files in a `Logs/` folder (e.g. `UDP_Relay_Console<date>.0.log`) via `NetEscapades.Extensions.Logging.RollingFile`.
 - **Windows Event Log** in the Service host.
 
 Swap in Serilog, NLog, Application Insights, or anything else that exposes an `ILogger` — no changes to the relay core.

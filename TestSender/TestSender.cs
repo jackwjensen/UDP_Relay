@@ -22,6 +22,7 @@ try
     );
     var log = loggerFactory.CreateLogger<Program>();
     Logger.AddLogger(log);
+    Logger.WriteToConsole = true; // test harness: mirror log output to the console window
 
     // Get settings from XML file
     Logger.Log("Test Sender started");

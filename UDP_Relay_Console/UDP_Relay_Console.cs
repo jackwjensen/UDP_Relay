@@ -16,12 +16,13 @@ try
     // Add logging beyond console
     var loggerFactory = LoggerFactory.Create(
         builder => builder
-                    .AddFile(options => { options.FileName = "UDP_Relay_Consol"; options.Extension = "log"; })
+                    .AddFile(options => { options.FileName = "UDP_Relay_Console"; options.Extension = "log"; })
                     .AddDebug()
                     .SetMinimumLevel(LogLevel.Debug)
     );
     var log = loggerFactory.CreateLogger<Program>();
     Logger.AddLogger(log);
+    Logger.WriteToConsole = true; // console host: mirror log output to the console window
 
     // Get settings from XML file
     Logger.Log("UDP Relay Console started");

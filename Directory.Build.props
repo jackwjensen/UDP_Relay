@@ -25,6 +25,7 @@
   <!-- Language settings for SDK-style projects only (the classic service keeps its own). -->
   <PropertyGroup Condition="'$(MSBuildProjectName)' != 'UDP_Relay_Service'">
     <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
 </Project>
