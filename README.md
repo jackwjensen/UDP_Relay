@@ -1,5 +1,3 @@
-<div align="center">
-
 # UDP Relay
 
 **Bridge UDP broadcasts across network boundaries.**
@@ -11,9 +9,7 @@ Catch UDP broadcast (or unicast) messages on one LAN and relay them — in both 
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-blue.svg)](#requirements)
 [![Maintained by Allegro IT](https://img.shields.io/badge/maintained%20by-Allegro%20IT-ff7a00.svg)](https://allegroit.dk/)
 
-<sub>Built and maintained by <a href="https://allegroit.dk/"><b>Allegro IT ApS</b></a> — international project leadership, legacy-code maintenance & cloud hosting.</sub>
-
-</div>
+_Built and maintained by **[Allegro IT ApS](https://allegroit.dk/)** — international project leadership, legacy-code maintenance & cloud hosting._
 
 ---
 
@@ -242,13 +238,9 @@ Released under the [MIT License](LICENSE). © 2023 Jack W. Jensen.
 
 ## About Allegro IT
 
-<div align="center">
-
 [![Allegro IT](https://img.shields.io/badge/Allegro%20IT-allegroit.dk-ff7a00.svg?style=for-the-badge)](https://allegroit.dk/)
 
 ***"International projektledelse med holdånd"*** — *international project management with team spirit.*
-
-</div>
 
 **Allegro IT ApS** is a Danish software consultancy specialising in **project leadership**, **legacy-code maintenance**, and **cloud hosting**. UDP Relay grew out of real integration work — connecting devices and systems that were never designed to talk to each other.
 
@@ -258,6 +250,4 @@ If you need to bridge protocols, modernise legacy systems, or get a stubborn pie
 - ✉️ Contact: **[kontakt@allegroit.dk](mailto:kontakt@allegroit.dk)**
 - 📍 Randers, Denmark
 
-<div align="center">
-<sub>If this project helped you, a ⭐ on the repo is appreciated — and tell us what you built with it.</sub>
-</div>
+_If this project helped you, a ⭐ on the repo is appreciated — and tell us what you built with it._
