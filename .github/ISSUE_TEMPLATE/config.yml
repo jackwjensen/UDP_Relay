@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Allegro IT
+    url: https://allegroit.dk/
+    about: Need help integrating UDP Relay, or commercial support? Get in touch with Allegro IT.
+  - name: Security report (private)
+    url: https://github.com/jackwjensen/UDP_Relay/security/policy
+    about: Please report security vulnerabilities privately — do not open a public issue.
