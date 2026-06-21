@@ -89,6 +89,10 @@ Run **either** the Console **or** the Service — both host the same core engine
 
 ## Getting started
 
+> **Prefer a prebuilt binary?** Self-contained builds (no .NET install required) for
+> Windows and Linux are attached to each [release](https://github.com/jackwjensen/UDP_Relay/releases)
+> — download, edit the `Settings_*.xml`, and run. To build from source instead, read on.
+
 ### Prerequisites
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download) (for the Console, test harnesses and tests; the projects also target .NET 8 and 9).

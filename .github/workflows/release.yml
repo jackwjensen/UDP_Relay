@@ -1,0 +1,88 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to build when run manually (e.g. 1.2.3)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build & publish release
+    runs-on: windows-latest
+    env:
+      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET 8 / 9 / 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
+
+      - name: Set up MSBuild (for the .NET Framework service)
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Set up NuGet
+        uses: NuGet/setup-nuget@v2
+
+      - name: Determine version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "VERSION=${{ github.event.inputs.version }}" >> "$GITHUB_ENV"
+            echo "TAG=v${{ github.event.inputs.version }}" >> "$GITHUB_ENV"
+          else
+            echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+            echo "TAG=${GITHUB_REF_NAME}" >> "$GITHUB_ENV"
+          fi
+
+      - name: Publish self-contained console host (win-x64, linux-x64)
+        run: |
+          for rid in win-x64 linux-x64; do
+            dotnet publish UDP_Relay_Console/UDP_Relay_Console.csproj \
+              -c Release -f net10.0 -r "$rid" --self-contained true \
+              -p:PublishSingleFile=true -p:Version="$VERSION" \
+              -o "publish/console-$rid"
+          done
+
+      - name: Build Windows Service (.NET Framework 4.7.2)
+        run: |
+          nuget restore UDP_Relay.sln
+          msbuild UDP_Relay_Service/UDP_Relay_Service.csproj -p:Configuration=Release -m
+
+      - name: Package artifacts
+        run: |
+          mkdir -p assets
+          7z a "assets/UDP_Relay_Console-$VERSION-win-x64.zip"   "./publish/console-win-x64/*"
+          7z a "assets/UDP_Relay_Console-$VERSION-linux-x64.zip" "./publish/console-linux-x64/*"
+          7z a "assets/UDP_Relay_Service-$VERSION.zip"           "./UDP_Relay_Service/bin/Release/*"
+
+      - name: Pack NuGet package
+        run: dotnet pack UDP_Relay_Core/UDP_Relay_Core.csproj -c Release -p:Version="$VERSION" -o nupkgs
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release create "$TAG" assets/*.zip --title "$TAG" --generate-notes
+
+      - name: Push NuGet package
+        if: ${{ env.NUGET_API_KEY != '' }}
+        run: |
+          dotnet nuget push "nupkgs/*.nupkg" \
+            --api-key "$NUGET_API_KEY" \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate

@@ -66,7 +66,7 @@ The **Windows Service** project is classic .NET Framework (uses `packages.config
 
 Automated tests live in `UDP_Relay_Core.Tests` (xUnit, run with `dotnet test`); end-to-end checks can also be done by hand via the two harnesses. CI: `.github/workflows/build.yml` builds every project and runs the tests on `windows-latest` for each push/PR (dotnet for the modern projects, MSBuild + NuGet for the Service).
 
-`UDP_Relay_Core` carries NuGet package metadata (id `UDP_Relay_Core`) and packs with `dotnet pack` — the package bundles the repo README and a symbol package. Publishing is wired into the release workflow (a `v*` tag), which needs a `NUGET_API_KEY` repo secret; it is not yet on nuget.org.
+`UDP_Relay_Core` carries NuGet package metadata (id `UDP_Relay_Core`) and packs with `dotnet pack` — the package bundles the repo README and a symbol package. `.github/workflows/release.yml` (on a `v*` tag, or manual dispatch) publishes self-contained Console binaries (win-x64/linux-x64) + the Service zip as GitHub Release assets and pushes the NuGet package (the push is skipped unless a `NUGET_API_KEY` repo secret is set). Nothing is on nuget.org / the Releases page yet — the first tag does it.
 
 ## Logging
 
