@@ -5,6 +5,18 @@
     <BaseOutputPath></BaseOutputPath>
   </PropertyGroup>
 
+  <!-- NuGet package metadata. Authors/Company/RepositoryUrl/PackageProjectUrl come from Directory.Build.props. -->
+  <PropertyGroup>
+    <PackageId>UDP_Relay_Core</PackageId>
+    <Version>1.0.0</Version>
+    <Description>Bidirectional UDP relay engine: forwards UDP broadcast/unicast packets to a remote endpoint and relays replies back. The reusable core of UDP Relay (https://github.com/jackwjensen/UDP_Relay).</Description>
+    <PackageTags>udp;relay;udp-relay;broadcast;networking;iot;packet-forwarding</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Remove="UDP_Receiver.cs" />
     <Compile Remove="UDP_Sender.cs" />
@@ -12,6 +24,11 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
+  </ItemGroup>
+
+  <!-- Ship the project README on the NuGet package page. -->
+  <ItemGroup>
+    <None Include="..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>

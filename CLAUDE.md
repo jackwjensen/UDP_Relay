@@ -66,6 +66,8 @@ The **Windows Service** project is classic .NET Framework (uses `packages.config
 
 Automated tests live in `UDP_Relay_Core.Tests` (xUnit, run with `dotnet test`); end-to-end checks can also be done by hand via the two harnesses. CI: `.github/workflows/build.yml` builds every project and runs the tests on `windows-latest` for each push/PR (dotnet for the modern projects, MSBuild + NuGet for the Service).
 
+`UDP_Relay_Core` carries NuGet package metadata (id `UDP_Relay_Core`) and packs with `dotnet pack` — the package bundles the repo README and a symbol package. Publishing is wired into the release workflow (a `v*` tag), which needs a `NUGET_API_KEY` repo secret; it is not yet on nuget.org.
+
 ## Logging
 
 `UDP_Relay_Core.Logger` is a static class: every `Log*` call fans out to each `ILogger` registered with `Logger.AddLogger(...)`, and also mirrors to `Console` when `Logger.WriteToConsole` is true (the console host and test harnesses set it; the Service leaves it off). Hosts wire up sinks at startup via `Microsoft.Extensions.Logging` (Debug everywhere, Console in the interactive hosts; rolling `.log` files in a `Logs/` subfolder via `NetEscapades.Extensions.Logging.RollingFile` (configured with `options.Extension = "log"`); Windows Event Log in the Service). Use message templates and the existing `Log` / `LogDebug` / `LogTrace` / `Log(ex)` overloads.
