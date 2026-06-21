@@ -23,10 +23,10 @@ jobs:
         shell: bash
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up .NET 8 / 9 / 10
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: |
             8.0.x
@@ -68,10 +68,15 @@ jobs:
       - name: Pack NuGet package
         run: dotnet pack UDP_Relay_Core/UDP_Relay_Core.csproj -c Release -p:Version="$VERSION" -o nupkgs
 
-      - name: Create GitHub Release
+      - name: Create or update GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release create "$TAG" assets/*.zip --title "$TAG" --generate-notes
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" assets/*.zip --clobber
+          else
+            gh release create "$TAG" assets/*.zip --title "$TAG" --generate-notes
+          fi
 
       # Trusted Publishing: exchange the GitHub OIDC token for a short-lived nuget.org
       # API key (no stored secret). Requires a Trusted Publishing policy on nuget.org
@@ -84,7 +89,7 @@ jobs:
 
       - name: Push NuGet package
         run: |
-          dotnet nuget push "nupkgs/*.nupkg" \
+          dotnet nuget push nupkgs/*.nupkg \
             --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}" \
             --source https://api.nuget.org/v3/index.json \
             --skip-duplicate

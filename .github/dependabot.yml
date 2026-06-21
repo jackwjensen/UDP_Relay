@@ -1,19 +1,27 @@
 version: 2
 updates:
-  # NuGet package updates across all projects
+  # NuGet package updates across all projects — bundled into a single grouped PR.
   - package-ecosystem: "nuget"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     open-pull-requests-limit: 5
     commit-message:
       prefix: "deps"
+    groups:
+      nuget:
+        patterns:
+          - "*"
 
-  # Keep the GitHub Actions in the workflows up to date
+  # GitHub Actions used in the workflows — bundled into a single grouped PR.
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     open-pull-requests-limit: 5
     commit-message:
       prefix: "ci"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
