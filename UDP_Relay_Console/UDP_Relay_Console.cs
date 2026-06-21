@@ -16,7 +16,7 @@ try
     // Add logging beyond console
     var loggerFactory = LoggerFactory.Create(
         builder => builder
-                    .AddFile("UDP_Relay_Consol.log")
+                    .AddFile(options => { options.FileName = "UDP_Relay_Consol"; options.Extension = "log"; })
                     .AddDebug()
                     .SetMinimumLevel(LogLevel.Debug)
     );
@@ -48,7 +48,7 @@ try
     relay.StartRelaying(listeningClientEndPoint, sendingServerEndPoint);
     relay.StartRelaying(listeningServerEndPoint, sendingClientEndPoint);
     Thread.Sleep(100);
-    Console.WriteLine("Pres any key to stop relaying");
+    Console.WriteLine("Press any key to stop relaying");
 
     Console.ReadKey();    
     relay.StopRelaying();

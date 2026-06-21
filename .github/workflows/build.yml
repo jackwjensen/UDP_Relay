@@ -1,0 +1,46 @@
+name: Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build & test (Windows)
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up .NET 8 / 9 / 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
+
+      - name: Set up MSBuild (for the .NET Framework service)
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Set up NuGet
+        uses: NuGet/setup-nuget@v2
+
+      # --- Modern .NET projects: core library, console host and test harnesses ---
+      - name: Build console & test harnesses (net8.0 / net9.0 / net10.0)
+        run: |
+          dotnet build UDP_Relay_Console/UDP_Relay_Console.csproj -c Release
+          dotnet build TestSender/TestSender.csproj -c Release
+          dotnet build TestReceiver/TestReceiver.csproj -c Release
+
+      - name: Run tests (net8.0 / net9.0 / net10.0)
+        run: dotnet test UDP_Relay_Core.Tests/UDP_Relay_Core.Tests.csproj -c Release
+
+      # --- Legacy .NET Framework 4.7.2 Windows Service (needs MSBuild + NuGet restore) ---
+      - name: Build Windows Service (.NET Framework 4.7.2)
+        run: |
+          nuget restore UDP_Relay.sln
+          msbuild UDP_Relay_Service/UDP_Relay_Service.csproj -p:Configuration=Release -m

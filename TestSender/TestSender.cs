@@ -16,7 +16,7 @@ try
     // Add logging beyond console
     var loggerFactory = LoggerFactory.Create(
         builder => builder
-                    .AddFile("UDP_TestSender.log")
+                    .AddFile(options => { options.FileName = "UDP_TestSender"; options.Extension = "log"; })
                     .AddDebug()
                     .SetMinimumLevel(LogLevel.Debug)
     );
@@ -45,10 +45,17 @@ try
     {
         string sendMessage = "A" + i;
         byte[] sendData = Encoding.UTF8.GetBytes(sendMessage);
+
+        // Start listening for the reply BEFORE sending, so a fast round-trip (e.g. on loopback)
+        // can't arrive before the receive socket is bound. On a real network the latency makes
+        // the ordering moot, but pre-binding keeps the harness reliable everywhere.
+        Task<byte[]> receiveTask = Task.Run(() => relay.Receive(listeningEndPoint, timeOut, null));
+        Thread.Sleep(50); // give the receive socket a moment to bind before we send
+
         relay.Send(sendingEndPoint, sendData);
         Logger.Log("Data sent: " + sendMessage + " to: " + sendingEndPoint);
 
-        byte[] receivedData = relay.Receive(listeningEndPoint, timeOut, null);
+        byte[] receivedData = receiveTask.Result;
         string receivedMessage = Encoding.UTF8.GetString(receivedData);
         Logger.Log("Received: " + receivedMessage + " from: " + listeningEndPoint);
 

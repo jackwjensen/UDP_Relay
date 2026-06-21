@@ -18,7 +18,7 @@ try
     // Add logging beyond console
     var loggerFactory = LoggerFactory.Create(
         builder => builder
-                    .AddFile("UDP_TestReceiver.log")
+                    .AddFile(options => { options.FileName = "UDP_TestReceiver"; options.Extension = "log"; })
                     .AddDebug()
                     .SetMinimumLevel(LogLevel.Debug)
     );

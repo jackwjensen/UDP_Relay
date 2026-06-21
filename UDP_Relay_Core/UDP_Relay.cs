@@ -107,7 +107,7 @@ namespace UDP_Relay_Core
                 }
                 else
                 {
-                    Logger.LogTrace("Timeout when trying to send: " + localEndPoint);
+                    Logger.LogTrace("Timeout when trying to receive: " + localEndPoint);
                 }
             }
             return data;
@@ -179,13 +179,49 @@ namespace UDP_Relay_Core
                             Logger.LogTrace("Task was canceled: " + tName);
                             udpClient.Close();
                         }
+                        catch (Exception ex) when (IsDestinationUnreachable(ex))
+                        {
+                            // ICMP "port unreachable" from a prior forward surfaces as WSAECONNRESET
+                            // (10054) on Windows / ECONNREFUSED on Linux on the next receive. The
+                            // destination was momentarily unreachable — ignore it and keep relaying so
+                            // this direction self-heals when the destination comes back.
+                            Logger.LogDebug("Destination unreachable, continuing relay: " + tName);
+                        }
                     }
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when StopRelaying cancels the task during shutdown — not an error.
+                Logger.LogTrace("Relay task canceled: " + localEndPoint + " - " + relayEndPoint);
+            }
+            catch (Exception ex) when (cancellationToken.IsCancellationRequested)
+            {
+                // A socket operation can fault as the task is torn down on shutdown (e.g. the
+                // client was closed mid-receive). Expected too — log at trace, not as an error.
+                Logger.LogTrace("Relay task stopped during shutdown: " + ex.Message);
             }
             catch (Exception ex)
             {
                 Logger.Log(ex);
             }
+        }
+
+        /// <summary>
+        /// Returns true when an exception indicates the datagram's destination was unreachable.
+        /// Windows raises this as WSAECONNRESET (ConnectionReset) and Linux as ECONNREFUSED
+        /// (ConnectionRefused) on a receive that follows a send to a port with no listener.
+        /// </summary>
+        private static bool IsDestinationUnreachable(Exception ex)
+        {
+            SocketException socketException = ex as SocketException;
+            if (socketException == null && ex is AggregateException aggregate)
+            {
+                socketException = aggregate.Flatten().InnerException as SocketException;
+            }
+            return socketException != null
+                && (socketException.SocketErrorCode == SocketError.ConnectionReset
+                    || socketException.SocketErrorCode == SocketError.ConnectionRefused);
         }
 
         /// <summary>

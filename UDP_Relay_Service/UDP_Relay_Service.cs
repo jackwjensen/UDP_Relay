@@ -39,7 +39,7 @@ namespace UDP_Relay_Service
             // Add logging beyond console
             var loggerFactory = LoggerFactory.Create(
                 builder => builder
-                            .AddFile("UDP_Relay_Service.log")
+                            .AddFile(options => { options.FileName = "UDP_Relay_Service"; options.Extension = "log"; })
                             .AddDebug()
                             .AddEventLog(new EventLogSettings()
                             {
@@ -73,8 +73,8 @@ namespace UDP_Relay_Service
                 IPEndPoint listeningServerEndPoint = xML_Wrapper.GetIPEndPoint(@"/UDP_Relay_Service/ListeningServerIP", @"/UDP_Relay_Service/ListeningServerPort");
                 Logger.LogDebug("Listening Server EndPoint: " + listeningServerEndPoint);
 
-                IPEndPoint sendingDlientEndPoint = xML_Wrapper.GetIPEndPoint(@"/UDP_Relay_Service/SendingClientIP", @"/UDP_Relay_Service/SendingClientPort");
-                Logger.LogDebug("Sending Client EndPoint: " + sendingDlientEndPoint);
+                IPEndPoint sendingClientEndPoint = xML_Wrapper.GetIPEndPoint(@"/UDP_Relay_Service/SendingClientIP", @"/UDP_Relay_Service/SendingClientPort");
+                Logger.LogDebug("Sending Client EndPoint: " + sendingClientEndPoint);
 
                 IPEndPoint sendingServerEndPoint = xML_Wrapper.GetIPEndPoint(@"/UDP_Relay_Service/SendingServerIP", @"/UDP_Relay_Service/SendingServerPort");
                 Logger.LogDebug("Sending Server EndPoint: " + sendingServerEndPoint);
@@ -86,7 +86,7 @@ namespace UDP_Relay_Service
                 Logger.LogDebug("Relaying of UDP packets started");
                 relay = new UDP_Relay();
                 relay.StartRelaying(listeningClientEndPoint, sendingServerEndPoint);
-                relay.StartRelaying(listeningServerEndPoint, sendingDlientEndPoint);
+                relay.StartRelaying(listeningServerEndPoint, sendingClientEndPoint);
 
                 Logger.Log("UDP Relay Service started");
             }
