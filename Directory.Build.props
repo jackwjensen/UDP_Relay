@@ -1,0 +1,30 @@
+<Project>
+
+  <!--
+    Shared MSBuild properties imported by every project in the repository.
+    Keep host-specific settings (TargetFramework(s), OutputType, package refs) in the
+    individual .csproj files. The classic .NET Framework service ignores the SDK-only
+    metadata below, so this file is safe for all projects.
+  -->
+
+  <PropertyGroup>
+    <!-- Assembly / package metadata -->
+    <Company>Allegro IT ApS</Company>
+    <Authors>Jack W. Jensen</Authors>
+    <Product>UDP Relay</Product>
+    <Copyright>Copyright © 2023 Jack W. Jensen</Copyright>
+    <RepositoryUrl>https://github.com/jackwjensen/UDP_Relay</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://allegroit.dk/</PackageProjectUrl>
+    <Deterministic>true</Deterministic>
+
+    <!-- Single source of truth for the modern, multi-targeted apps and tests. -->
+    <UdpRelayAppTargetFrameworks>net8.0;net9.0;net10.0</UdpRelayAppTargetFrameworks>
+  </PropertyGroup>
+
+  <!-- Language settings for SDK-style projects only (the classic service keeps its own). -->
+  <PropertyGroup Condition="'$(MSBuildProjectName)' != 'UDP_Relay_Service'">
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+</Project>
