@@ -11,14 +11,13 @@ on:
         required: true
 
 permissions:
-  contents: write
+  contents: write   # create the GitHub Release
+  id-token: write   # OIDC token for NuGet Trusted Publishing
 
 jobs:
   release:
     name: Build & publish release
     runs-on: windows-latest
-    env:
-      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
     defaults:
       run:
         shell: bash
@@ -74,10 +73,18 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release create "$TAG" assets/*.zip --title "$TAG" --generate-notes
 
+      # Trusted Publishing: exchange the GitHub OIDC token for a short-lived nuget.org
+      # API key (no stored secret). Requires a Trusted Publishing policy on nuget.org
+      # for this repo + workflow file (release.yml). 'user' is the nuget.org profile name.
+      - name: NuGet login (trusted publishing)
+        uses: NuGet/login@v1
+        id: nuget-login
+        with:
+          user: JackWJensen
+
       - name: Push NuGet package
-        if: ${{ env.NUGET_API_KEY != '' }}
         run: |
           dotnet nuget push "nupkgs/*.nupkg" \
-            --api-key "$NUGET_API_KEY" \
+            --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}" \
             --source https://api.nuget.org/v3/index.json \
             --skip-duplicate

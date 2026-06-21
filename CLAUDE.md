@@ -67,7 +67,7 @@ The **Windows Service** is a standard **.NET 10 Worker Service** (`Microsoft.Ext
 
 Automated tests live in `UDP_Relay_Core.Tests` (xUnit, run with `dotnet test`); end-to-end checks can also be done by hand via the two harnesses. CI: `.github/workflows/build.yml` builds the whole solution and runs the tests on `windows-latest` for each push/PR — every project is SDK-style, so plain `dotnet build UDP_Relay.sln` covers all of them.
 
-`UDP_Relay_Core` carries NuGet package metadata (id `UDP_Relay_Core`) and packs with `dotnet pack` — the package bundles the repo README and a symbol package. `.github/workflows/release.yml` (on a `v*` tag, or manual dispatch) publishes self-contained Console binaries (win-x64/linux-x64) + the Service zip as GitHub Release assets and pushes the NuGet package (the push is skipped unless a `NUGET_API_KEY` repo secret is set). Nothing is on nuget.org / the Releases page yet — the first tag does it.
+`UDP_Relay_Core` carries NuGet package metadata (id `UDP_Relay_Core`) and packs with `dotnet pack` — the package bundles the repo README and a symbol package. `.github/workflows/release.yml` (on a `v*` tag, or manual dispatch) publishes self-contained Console binaries (win-x64/linux-x64) + the Service zip as GitHub Release assets and pushes the NuGet package via **Trusted Publishing** — the `NuGet/login` action exchanges the GitHub OIDC token (`id-token: write`) for a short-lived key, so there's no stored API key. This needs a Trusted Publishing policy on nuget.org (owner `JackWJensen`, repo `UDP_Relay`, workflow `release.yml`, no environment). Nothing is on nuget.org / the Releases page yet — the first tag does it.
 
 ## Logging
 
