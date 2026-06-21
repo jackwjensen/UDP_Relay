@@ -7,7 +7,7 @@ Catch UDP broadcast (or unicast) messages on one LAN and relay them — in both 
 
 [![Build](https://github.com/jackwjensen/UDP_Relay/actions/workflows/build.yml/badge.svg)](https://github.com/jackwjensen/UDP_Relay/actions/workflows/build.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![.NET](https://img.shields.io/badge/.NET-8%20%7C%209%20%7C%2010%20%7C%20Standard%202.0%20%7C%20Framework%204.7.2-512BD4?logo=dotnet&logoColor=white)](#requirements)
+[![.NET](https://img.shields.io/badge/.NET-8%20%7C%209%20%7C%2010%20%7C%20Standard%202.0-512BD4?logo=dotnet&logoColor=white)](#requirements)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-blue.svg)](#requirements)
 [![Maintained by Allegro IT](https://img.shields.io/badge/maintained%20by-Allegro%20IT-ff7a00.svg)](https://allegroit.dk/)
 
@@ -70,7 +70,7 @@ Each direction is just a `localEndPoint → relayEndPoint` pair, configured in X
 | --- | --- | --- |
 | **`UDP_Relay_Core`** | .NET Standard 2.0 | The reusable engine — relay logic, XML settings reader, pluggable logging, async cancellation. Usable from .NET Framework **and** modern .NET. |
 | **`UDP_Relay_Console`** | .NET 8 / 9 / 10 | Cross-platform console host (Windows / Linux / macOS). |
-| **`UDP_Relay_Service`** | .NET Framework 4.7.2 | Windows Service host with Windows Event Log integration and install scripts. |
+| **`UDP_Relay_Service`** | .NET 10 (Worker Service) | Windows Service host (`Microsoft.Extensions.Hosting`) with Event Log integration and `sc`-based install scripts; also runs as a console for testing. |
 | **`TestSender`** | .NET 8 / 9 / 10 | Test harness that simulates a broadcasting device. |
 | **`TestReceiver`** | .NET 8 / 9 / 10 | Test harness that simulates the remote server (echoes replies). |
 | **`UDP_Relay_Core.Tests`** | .NET 8 / 9 / 10 | xUnit test suite for the core engine (run with `dotnet test`). |
@@ -96,7 +96,7 @@ Run **either** the Console **or** the Service — both host the same core engine
 ### Prerequisites
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download) (for the Console, test harnesses and tests; the projects also target .NET 8 and 9).
-- For the Windows Service: Windows with [.NET Framework 4.7.2](https://dotnet.microsoft.com/download/dotnet-framework) (the runtime ships with Windows 10/11).
+- For the Windows Service: Windows with the [.NET 10 runtime](https://dotnet.microsoft.com/download) — or grab the self-contained build from [Releases](https://github.com/jackwjensen/UDP_Relay/releases), which bundles the runtime.
 
 ### Build
 
@@ -106,7 +106,7 @@ cd UDP_Relay
 dotnet build UDP_Relay.sln -c Release
 ```
 
-> The Windows Service project targets classic .NET Framework and builds best in **Visual Studio** (or with MSBuild) on Windows. The Console and test apps are cross-platform and build/run anywhere with the .NET SDK (8, 9 or 10).
+> Every project is SDK-style, so `dotnet build UDP_Relay.sln` builds the whole solution — including the .NET 10 Worker Service. The console and test apps are cross-platform; the Windows Service installs on Windows.
 
 ### Run the Console
 
@@ -121,14 +121,14 @@ Edit `Settings_UDP_Relay_Console.xml` first (see [Configuration](#configuration)
 
 ### Run as a Windows Service
 
-The Service project includes batch scripts (run from an **elevated** command prompt in the build output folder):
+The Service is a .NET 10 Worker Service. Build or publish it, then from an **elevated** command prompt in the output folder use the included scripts (it can also run as a plain console with `dotnet run --project UDP_Relay_Service` for testing):
 
 | Script | Action |
 | --- | --- |
-| `ServiceInstall.bat` | Register the service (`installutil`) |
+| `ServiceInstall.bat` | Register the service (`sc create`) |
 | `ServiceStart.bat` | Start it (`sc start`) |
 | `ServiceStop.bat` | Stop it (`sc stop`) |
-| `ServiceUninstall.bat` | Remove it (`installutil /uninstall`) |
+| `ServiceUninstall.bat` | Remove it (`sc delete`) |
 
 Settings live in `Settings_UDP_Relay_Service.xml` next to the executable. The service also writes to the Windows **Application** event log under source `UDP_Relay_Service`.
 
@@ -229,7 +229,7 @@ relay.StopRelaying();
 ## Requirements
 
 - **Console & test apps:** .NET 8, 9 or 10 (cross-platform; multi-targeted).
-- **Windows Service:** Windows + .NET Framework 4.7.2.
+- **Windows Service:** Windows + .NET 10 (or a self-contained release build — no runtime needed).
 - **Core library:** .NET Standard 2.0 — works with .NET Framework 4.6.1+ and .NET 8/9/10 (and .NET Core 2.0+).
 
 ---

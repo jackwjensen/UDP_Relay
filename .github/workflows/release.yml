@@ -34,12 +34,6 @@ jobs:
             9.0.x
             10.0.x
 
-      - name: Set up MSBuild (for the .NET Framework service)
-        uses: microsoft/setup-msbuild@v2
-
-      - name: Set up NuGet
-        uses: NuGet/setup-nuget@v2
-
       - name: Determine version
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
@@ -50,26 +44,27 @@ jobs:
             echo "TAG=${GITHUB_REF_NAME}" >> "$GITHUB_ENV"
           fi
 
-      - name: Publish self-contained console host (win-x64, linux-x64)
+      - name: Publish self-contained binaries
         run: |
+          # Console host for Windows and Linux
           for rid in win-x64 linux-x64; do
             dotnet publish UDP_Relay_Console/UDP_Relay_Console.csproj \
               -c Release -f net10.0 -r "$rid" --self-contained true \
               -p:PublishSingleFile=true -p:Version="$VERSION" \
               -o "publish/console-$rid"
           done
-
-      - name: Build Windows Service (.NET Framework 4.7.2)
-        run: |
-          nuget restore UDP_Relay.sln
-          msbuild UDP_Relay_Service/UDP_Relay_Service.csproj -p:Configuration=Release -m
+          # Windows Service (Windows only)
+          dotnet publish UDP_Relay_Service/UDP_Relay_Service.csproj \
+            -c Release -r win-x64 --self-contained true \
+            -p:PublishSingleFile=true -p:Version="$VERSION" \
+            -o "publish/service-win-x64"
 
       - name: Package artifacts
         run: |
           mkdir -p assets
           7z a "assets/UDP_Relay_Console-$VERSION-win-x64.zip"   "./publish/console-win-x64/*"
           7z a "assets/UDP_Relay_Console-$VERSION-linux-x64.zip" "./publish/console-linux-x64/*"
-          7z a "assets/UDP_Relay_Service-$VERSION.zip"           "./UDP_Relay_Service/bin/Release/*"
+          7z a "assets/UDP_Relay_Service-$VERSION-win-x64.zip"   "./publish/service-win-x64/*"
 
       - name: Pack NuGet package
         run: dotnet pack UDP_Relay_Core/UDP_Relay_Core.csproj -c Release -p:Version="$VERSION" -o nupkgs

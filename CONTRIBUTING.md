@@ -7,9 +7,9 @@ the guidelines are short.
 
 - Install the [.NET 10 SDK](https://dotnet.microsoft.com/download) (the apps also target
   .NET 8 and 9; the SDK builds all three).
-- The **Windows Service** project targets classic .NET Framework 4.7.2 — build it in
-  **Visual Studio** or with **MSBuild + `nuget restore`** on Windows (`dotnet build`
-  does not handle its `packages.config`).
+- The **Windows Service** is a .NET 10 Worker Service and builds with `dotnet` like the
+  rest of the solution (`dotnet build UDP_Relay.sln`); it installs and runs on Windows,
+  and can be run as a plain console for testing.
 
 ```bash
 git clone https://github.com/jackwjensen/UDP_Relay.git
@@ -33,9 +33,9 @@ dotnet test  UDP_Relay_Core.Tests/UDP_Relay_Core.Tests.csproj
 - **Naming:** types and projects use underscores (`UDP_Relay`, `XML_Wrapper`,
   `UDP_Relay_Core`). This is deliberate here — match it, don't rename to PascalCase.
   Private fields are `_camelCase`.
-- **Keep `UDP_Relay_Core` framework-agnostic** — it targets `netstandard2.0` so both the
-  modern .NET hosts and the .NET Framework service can consume it. Don't add
-  modern-only or Windows-only APIs to Core.
+- **Keep `UDP_Relay_Core` framework-agnostic** — it targets `netstandard2.0` so it stays
+  consumable from any modern .NET host and, as a NuGet package, from .NET Framework too.
+  Don't add modern-only or Windows-only APIs to Core.
 - **Async** methods that await carry the `Async` suffix.
 - **Nullable reference types** are enabled — don't introduce new nullable warnings.
 

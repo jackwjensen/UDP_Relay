@@ -21,7 +21,7 @@ UDP_Relay_Core (netstandard2.0)  ← the engine; no host-specific or Windows-onl
 
 Hosts (consume Core):
    ├── UDP_Relay_Console (net8.0;net9.0;net10.0)         cross-platform console host (multi-targeted)
-   └── UDP_Relay_Service (.NET Framework 4.7.2, WinExe)  Windows Service host (Event Log + install .bat scripts)
+   └── UDP_Relay_Service (net10.0 Worker Service)        Windows Service host (RelayWorker; Event Log + sc-based install .bat scripts)
 
 Test harnesses (manual end-to-end, run by hand):
    ├── TestSender   (net8.0;net9.0;net10.0)  simulates a broadcasting device; sends 100 packets, prints replies
@@ -31,7 +31,7 @@ Automated tests:
    └── UDP_Relay_Core.Tests (net8.0;net9.0;net10.0)  xUnit suite for Core (XML_Wrapper, WithCancellation, loopback relay round-trip)
 ```
 
-**Dependency direction:** hosts and harnesses → `UDP_Relay_Core`. Core depends on nothing host-specific. **Keep Core framework-agnostic** — do not add modern-only (net8/9/10) or Windows-only APIs to it, or you break the Windows Service (which is .NET Framework 4.7.2) consuming it.
+**Dependency direction:** hosts and harnesses → `UDP_Relay_Core`. Core depends on nothing host-specific. **Keep Core framework-agnostic** — it targets `netstandard2.0` so it stays consumable from any modern .NET host and (as a published NuGet package) from .NET Framework too. Don't add modern-only (net8/9/10) or Windows-only APIs to it.
 
 ### The relay model (important)
 
@@ -52,19 +52,20 @@ Per-app XML files (`Settings_*.xml`) next to each executable, loaded via `XML_Wr
 
 ## Build / run / test
 
-SDK-style projects (Core, Console, TestSender, TestReceiver, tests) use the `dotnet` CLI. The executables and the test project **multi-target `net8.0;net9.0;net10.0`**, so `dotnet run` needs `-f` to pick a runtime:
+Every project is SDK-style and uses the `dotnet` CLI — `dotnet build UDP_Relay.sln` builds them all. The console, harnesses and test project **multi-target `net8.0;net9.0;net10.0`**, so `dotnet run` needs `-f` to pick a runtime (the Service is single-target `net10.0`):
 
 ```bash
-dotnet build UDP_Relay_Console/UDP_Relay_Console.csproj -c Release
+dotnet build UDP_Relay.sln -c Release
 dotnet run  --project UDP_Relay_Console -f net10.0
 dotnet run  --project TestReceiver -f net10.0     # start first
 dotnet run  --project TestSender   -f net10.0     # then this; watch the echoes
+dotnet run  --project UDP_Relay_Service           # runs the service as a console (Ctrl+C to stop)
 dotnet test UDP_Relay_Core.Tests/UDP_Relay_Core.Tests.csproj   # runs on all three TFMs
 ```
 
-The **Windows Service** project is classic .NET Framework (uses `packages.config` + `HintPath` into `packages/`). Build it in **Visual Studio** or with **MSBuild + `nuget restore` on Windows** — `dotnet build` does not handle its `packages.config`. Service lifecycle (run elevated, from the build output dir): `ServiceInstall.bat` → `ServiceStart.bat` → `ServiceStop.bat` → `ServiceUninstall.bat` (install/uninstall use `installutil.exe`).
+The **Windows Service** is a standard **.NET 10 Worker Service** (`Microsoft.Extensions.Hosting` + `AddWindowsService`, with `RelayWorker : BackgroundService`); it builds with `dotnet` like everything else and runs as a plain console for testing. Service lifecycle (run elevated, from the published/output folder): `ServiceInstall.bat` (`sc create`) → `ServiceStart.bat` → `ServiceStop.bat` → `ServiceUninstall.bat` (`sc delete`).
 
-Automated tests live in `UDP_Relay_Core.Tests` (xUnit, run with `dotnet test`); end-to-end checks can also be done by hand via the two harnesses. CI: `.github/workflows/build.yml` builds every project and runs the tests on `windows-latest` for each push/PR (dotnet for the modern projects, MSBuild + NuGet for the Service).
+Automated tests live in `UDP_Relay_Core.Tests` (xUnit, run with `dotnet test`); end-to-end checks can also be done by hand via the two harnesses. CI: `.github/workflows/build.yml` builds the whole solution and runs the tests on `windows-latest` for each push/PR — every project is SDK-style, so plain `dotnet build UDP_Relay.sln` covers all of them.
 
 `UDP_Relay_Core` carries NuGet package metadata (id `UDP_Relay_Core`) and packs with `dotnet pack` — the package bundles the repo README and a symbol package. `.github/workflows/release.yml` (on a `v*` tag, or manual dispatch) publishes self-contained Console binaries (win-x64/linux-x64) + the Service zip as GitHub Release assets and pushes the NuGet package (the push is skipped unless a `NUGET_API_KEY` repo secret is set). Nothing is on nuget.org / the Releases page yet — the first tag does it.
 
@@ -75,9 +76,9 @@ Automated tests live in `UDP_Relay_Core.Tests` (xUnit, run with `dotnet test`); 
 ## Conventions & gotchas
 
 - **Naming:** types and projects use underscores (`UDP_Relay`, `XML_Wrapper`, `UDP_Relay_Core`). This is non-idiomatic C# but it is the established style here — **match it; don't rename to PascalCase.** Private fields are `_camelCase`.
-- **Nullable:** enabled repo-wide for every SDK project via `Directory.Build.props` (Core, Console, harnesses, tests). The classic .NET Framework Service is excluded by a project-name condition. Don't introduce new nullable warnings.
+- **Nullable:** enabled repo-wide for every project via `Directory.Build.props` (Core, Console, harnesses, tests, Service). Don't introduce new nullable warnings.
 - **Async:** methods that await carry the `Async` suffix (`RelayAsync`). `WithCancellation` is an extension method (suffix not expected).
-- **Target frameworks are mixed on purpose** (Core `netstandard2.0`; Console/harnesses/tests multi-target `net8.0;net9.0;net10.0`; Service `net4.7.2`). .NET 10 is the primary LTS target; 8 and 9 are kept for compatibility. The framework list lives once in `Directory.Build.props` as `$(UdpRelayAppTargetFrameworks)`; the four multi-targeted projects reference it, so change it in one place. `Directory.Build.props` also holds shared assembly/package metadata (Company = Allegro IT, repo URL, etc.) and is imported by every project including the classic Service (SDK-only props there are simply ignored).
+- **Target frameworks are mixed on purpose** (Core `netstandard2.0`; Console/harnesses/tests multi-target `net8.0;net9.0;net10.0`; Service `net10.0`). .NET 10 is the primary LTS target; 8 and 9 are kept for compatibility. The multi-target list lives once in `Directory.Build.props` as `$(UdpRelayAppTargetFrameworks)`; the four multi-targeted projects reference it, so change it in one place. `Directory.Build.props` also holds shared assembly/package metadata (Company = Allegro IT, repo URL, etc.) plus shared `LangVersion`/`Nullable`, and is imported by every project.
 - **`Logger` console output is opt-in.** `Logger.WriteToConsole` defaults to false so Core stays quiet when embedded as a library; the console host and test harnesses set it `true`. Registered `ILogger`s always receive output regardless.
 - **The relay tolerates destination-unreachable resets — keep it that way.** `RelayAsync` catches `SocketError.ConnectionReset` (Windows `WSAECONNRESET`) / `ConnectionRefused` (Linux) and keeps relaying. Without it, a momentarily-down endpoint permanently kills that relay direction until the process restarts (regression-tested by `Relay_survives_send_to_unreachable_destination` in `UDP_Relay_Core.Tests`).
 

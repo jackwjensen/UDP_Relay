@@ -3,8 +3,7 @@
   <!--
     Shared MSBuild properties imported by every project in the repository.
     Keep host-specific settings (TargetFramework(s), OutputType, package refs) in the
-    individual .csproj files. The classic .NET Framework service ignores the SDK-only
-    metadata below, so this file is safe for all projects.
+    individual .csproj files.
   -->
 
   <PropertyGroup>
@@ -22,8 +21,8 @@
     <UdpRelayAppTargetFrameworks>net8.0;net9.0;net10.0</UdpRelayAppTargetFrameworks>
   </PropertyGroup>
 
-  <!-- Language settings for SDK-style projects only (the classic service keeps its own). -->
-  <PropertyGroup Condition="'$(MSBuildProjectName)' != 'UDP_Relay_Service'">
+  <!-- Language settings applied to every project. -->
+  <PropertyGroup>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>
