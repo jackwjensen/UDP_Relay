@@ -4,6 +4,7 @@
 Catch UDP broadcast (or unicast) messages on one LAN and relay them — in both directions — to an application on a different network.
 
 [![Build](https://github.com/jackwjensen/UDP_Relay/actions/workflows/build.yml/badge.svg)](https://github.com/jackwjensen/UDP_Relay/actions/workflows/build.yml)
+[![NuGet](https://img.shields.io/nuget/v/UDP_Relay_Core.svg?logo=nuget&label=NuGet)](https://www.nuget.org/packages/UDP_Relay_Core)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![.NET](https://img.shields.io/badge/.NET-8%20%7C%209%20%7C%2010%20%7C%20Standard%202.0-512BD4?logo=dotnet&logoColor=white)](#requirements)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-blue.svg)](#requirements)
@@ -196,7 +197,13 @@ Swap in Serilog, NLog, Application Insights, or anything else that exposes an `I
 
 ## Reuse the engine in your own project
 
-`UDP_Relay_Core` is a standalone .NET Standard 2.0 library, so you can embed the relay directly:
+`UDP_Relay_Core` is a standalone .NET Standard 2.0 library, published on [NuGet](https://www.nuget.org/packages/UDP_Relay_Core). Add it to any .NET project (Framework 4.6.1+ or modern .NET):
+
+```bash
+dotnet add package UDP_Relay_Core
+```
+
+Then embed the relay directly:
 
 ```csharp
 using System.Net;

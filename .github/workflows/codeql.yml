@@ -1,0 +1,43 @@
+name: CodeQL
+
+# Produces the CodeQL code-scanning results that the `main` branch ruleset
+# ("MainBranch") requires on every pull request. Without this workflow no
+# results are ever uploaded, so the ruleset's code-scanning requirement can
+# never be satisfied and merges are blocked with "code scanning may not be
+# configured for the target branch".
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: "24 5 * * 1"   # weekly re-scan, Monday 05:24 UTC
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: Analyze C#
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write   # upload CodeQL SARIF results
+      actions: read
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: csharp
+          # Buildless analysis — no .NET SDK setup or successful build required,
+          # which keeps this robust for the mixed netstandard2.0 / net8-9-10 targets.
+          build-mode: none
+
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:csharp"

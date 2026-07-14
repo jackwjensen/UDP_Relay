@@ -84,26 +84,37 @@ public class UdpRelayTests
             await Task.Delay(150);
         }
 
-        // Bring the destination online; the relay must still be forwarding.
+        // Bring the destination online; the relay must still be forwarding. A late
+        // "to-the-void" datagram forwarded just before the destination bound may still
+        // be in flight, so we drain any stale datagram and keep prompting until a fresh
+        // "still-alive" arrives. That the relay eventually delivers "still-alive" — not
+        // that the very first datagram seen equals it — is what proves it survived the
+        // WSAECONNRESET; asserting on the first datagram made this test flaky in CI.
         using var destination = new UdpClient(new IPEndPoint(IPAddress.Loopback, destinationPort));
-        var receiveTask = destination.ReceiveAsync();
         byte[] stillAlive = Encoding.UTF8.GetBytes("still-alive");
 
-        UdpReceiveResult? received = null;
-        for (int attempt = 0; attempt < 10 && received is null; attempt++)
+        bool receivedStillAlive = false;
+        var receiveTask = destination.ReceiveAsync();
+        for (int attempt = 0; attempt < 10 && !receivedStillAlive; attempt++)
         {
             await sender.SendAsync(stillAlive, stillAlive.Length,
                 new IPEndPoint(IPAddress.Loopback, relayListenPort));
-            if (await Task.WhenAny(receiveTask, Task.Delay(500)) == receiveTask)
+
+            while (await Task.WhenAny(receiveTask, Task.Delay(500)) == receiveTask)
             {
-                received = await receiveTask;
+                UdpReceiveResult result = await receiveTask; // already completed — no blocking
+                receiveTask = destination.ReceiveAsync();    // queue the next read before inspecting
+                if (Encoding.UTF8.GetString(result.Buffer) == "still-alive")
+                {
+                    receivedStillAlive = true;
+                    break;
+                }
             }
         }
 
         relay.StopRelaying();
 
-        Assert.True(received is not null,
+        Assert.True(receivedStillAlive,
             "Relay stopped forwarding after a send to an unreachable port (a 10054 likely killed the task).");
-        Assert.Equal("still-alive", Encoding.UTF8.GetString(received.Value.Buffer));
     }
 }
